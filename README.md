@@ -1,2 +1,299 @@
-# BA-DEAK
-BERITA ACARA PENGAMBILAN PERANGAT 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BA Deaktivasi ICONNET - Digital Form</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <style>
+        body { background-color: #f4f7f6; padding: 20px; font-family: 'Segoe UI', sans-serif; }
+        .form-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }
+        .section-title { background: #0056b3; color: white; padding: 8px 15px; margin-top: 25px; font-weight: bold; border-radius: 5px; font-size: 0.9rem; }
+        
+        /* Barcode Scanner Style */
+        #reader-container { display:none; max-width: 500px; margin: 10px auto; border: 2px solid #0056b3; border-radius: 10px; overflow: hidden; background: #000; }
+        #reader { width: 100%; }
+
+        /* Signature Pad Style */
+        .signature-wrapper {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            background: #fcfcfc;
+            position: relative;
+            height: 160px;
+            touch-action: none; 
+        }
+        canvas.signature-pad {
+            position: absolute; left: 0; top: 0; width: 100%; height: 100%; cursor: crosshair;
+        }
+        .btn-clear-sig { position: absolute; bottom: 5px; right: 5px; z-index: 10; }
+        
+        .btn-primary { background-color: #0056b3; border: none; }
+        .btn-success { background-color: #28a745; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="text-center mb-3">
+        <h3 style="color: #0056b3; font-weight: bold; margin-bottom: 0;">ICONNET</h3> 
+        <h5 class="fw-bold">BERITA ACARA PENGAMBILAN PERANGKAT</h5> 
+        <p class="text-muted small">SEMUA MAKIN MUDAH</p> 
+    </div>
+
+    <div id="reader-container">
+        <div id="reader"></div>
+        <button type="button" class="btn btn-danger w-100 rounded-0" onclick="stopScanner()">Tutup Kamera</button>
+    </div>
+
+    <form id="pdfForm">
+        <div class="row mb-2">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">No Form</label> 
+                <input type="text" id="no_form" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Order Purpose</label> 
+                <input type="text" id="order_purpose" class="form-control form-control-sm" placeholder="Deaktivasi">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Tanggal Serah Terima</label> 
+                <input type="date" id="tgl_serah" class="form-control form-control-sm">
+            </div>
+        </div>
+
+        <div class="section-title">CUSTOMER INFORMATION</div>
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <div class="mb-2">
+                    <label class="form-label small">Customer ID</label> <input type="text" id="cust_id" class="form-control form-control-sm">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">Nama Pelanggan</label> <input type="text" id="nama" class="form-control form-control-sm">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">Telepon</label> <input type="text" id="telepon" class="form-control form-control-sm">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-2">
+                    <label class="form-label small">Alamat</label> <textarea id="alamat" class="form-control form-control-sm" rows="2"></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-2">
+                        <label class="form-label small">Kota</label> <input type="text" id="kota" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-6 mb-2">
+                         <label class="form-label small">Provinsi</label> <input type="text" id="provinsi" class="form-control form-control-sm">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">DETAIL PERANGKAT</div>
+        <div class="table-responsive mt-2">
+            <table class="table table-bordered table-sm align-middle">
+                <thead class="table-light text-center small">
+                    <tr>
+                        <th>No</th><th>Material</th><th style="width: 70px;">QTY</th><th>Kondisi</th><th>Status</th><th>Serial Number</th>
+                    </tr>
+                </thead>
+                <tbody class="small text-center">
+                    <tr>
+                        <td>1</td><td class="text-start">ONT</td>
+                        <td><input type="number" id="ont_qty" class="form-control form-control-sm text-center" value="1"></td>
+                        <td><select id="ont_kondisi" class="form-select form-select-sm"><option>Baik</option><option>Rusak</option></select></td>
+                        <td><select id="ont_status" class="form-select form-select-sm"><option>Ada</option><option>Tidak Ada</option></select></td>
+                        <td>
+                            <div class="input-group input-group-sm">
+                                <input type="text" id="ont_sn" class="form-control">
+                                <button class="btn btn-primary" type="button" onclick="startScanner('ont_sn')">📸 Scan</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td><td class="text-start">STB</td>
+                        <td><input type="number" id="stb_qty" class="form-control form-control-sm text-center" value="0"></td>
+                        <td><select id="stb_kondisi" class="form-select form-select-sm"><option>Baik</option><option>Rusak</option></select></td>
+                        <td><select id="stb_status" class="form-select form-select-sm"><option>Ada</option><option>Tidak Ada</option></select></td>
+                        <td>
+                            <div class="input-group input-group-sm">
+                                <input type="text" id="stb_sn" class="form-control">
+                                <button class="btn btn-primary" type="button" onclick="startScanner('stb_sn')">📸 Scan</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Keterangan Deaktivasi</label> 
+            <textarea id="keterangan" class="form-control form-control-sm" rows="2"></textarea>
+        </div>
+
+        <div class="row mt-4 text-center">
+            <div class="col-md-6 mb-3">
+                <p class="fw-bold mb-1">Pelanggan</p>
+                <div class="signature-wrapper mb-2">
+                    <canvas id="sig-canvas-cust" class="signature-pad"></canvas>
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-clear-sig" onclick="clearSig('cust')">Hapus</button>
+                </div>
+                <input type="text" id="nama_penanda_cust" class="form-control form-control-sm text-center" placeholder="Nama Jelas Pelanggan">
+            </div>
+            <div class="col-md-6 mb-3">
+                <p class="fw-bold mb-1">Petugas (ICON+)</p>
+                <div class="signature-wrapper mb-2">
+                    <canvas id="sig-canvas-petugas" class="signature-pad"></canvas>
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-clear-sig" onclick="clearSig('petugas')">Hapus</button>
+                </div>
+                <input type="text" id="nama_penanda_petugas" class="form-control form-control-sm text-center" placeholder="Nama Jelas Petugas">
+            </div>
+        </div>
+
+        <div class="row g-2 mt-4">
+            <div class="col-md-6">
+                <button type="button" onclick="generatePDF(false)" class="btn btn-success btn-lg w-100 fw-bold">DOWNLOAD PDF</button>
+            </div>
+            <div class="col-md-6">
+                <button type="button" id="btnUpload" onclick="generatePDF(true)" class="btn btn-primary btn-lg w-100 fw-bold">UPLOAD KE DRIVE</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    let sigPadCust, sigPadPetugas;
+    let html5QrCode;
+    let activeTargetInput = "";
+
+    // --- Inisialisasi Kamera ---
+    function startScanner(targetId) {
+        activeTargetInput = targetId;
+        document.getElementById('reader-container').style.display = 'block';
+        html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+        html5QrCode.start({ facingMode: "environment" }, config, (text) => {
+            document.getElementById(activeTargetInput).value = text;
+            stopScanner();
+        }).catch(err => alert("Kamera Error: " + err));
+    }
+
+    function stopScanner() {
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                document.getElementById('reader-container').style.display = 'none';
+            });
+        }
+    }
+
+    // --- Inisialisasi Tanda Tangan ---
+    function initCanvas(canvasId) {
+        const canvas = document.getElementById(canvasId);
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        return new SignaturePad(canvas);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+        sigPadCust = initCanvas("sig-canvas-cust");
+        sigPadPetugas = initCanvas("sig-canvas-petugas");
+    });
+
+    function clearSig(type) {
+        if (type === 'cust') sigPadCust.clear();
+        if (type === 'petugas') sigPadPetugas.clear();
+    }
+
+    // --- Core Logic: Generate PDF & Upload ---
+    async function generatePDF(isUpload = false) {
+        // Validasi
+        if (sigPadCust.isEmpty() || sigPadPetugas.isEmpty()) {
+            alert("Harap lengkapi tanda tangan!"); return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Template PDF (Sesuai dokumen asli)
+        doc.setFontSize(18); doc.setTextColor(0, 86, 179);
+        doc.text("ICONNET", 105, 15, { align: "center" });
+        doc.setFontSize(12); doc.setTextColor(0, 0, 0);
+        doc.text("BERITA ACARA PENGAMBILAN PERANGKAT", 105, 22, { align: "center" });
+        doc.line(15, 30, 195, 30);
+
+        doc.setFontSize(9);
+        doc.text(`No Form: ${document.getElementById('no_form').value}`, 15, 38);
+        doc.text(`Order Purpose: ${document.getElementById('order_purpose').value}`, 15, 43);
+        doc.text(`Tanggal: ${document.getElementById('tgl_serah').value}`, 120, 38);
+
+        doc.autoTable({
+            startY: 50,
+            head: [['CUSTOMER INFORMATION', '']],
+            body: [
+                ["ID Pelanggan", `: ${document.getElementById('cust_id').value}`],
+                ["Nama", `: ${document.getElementById('nama').value}`],
+                ["Alamat", `: ${document.getElementById('alamat').value}`],
+                ["Telepon", `: ${document.getElementById('telepon').value}`],
+            ],
+            theme: 'plain', styles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 40, fontStyle: 'bold' } }
+        });
+
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 10,
+            head: [['No', 'Material', 'QTY', 'Kondisi', 'Status', 'Serial Number']],
+            body: [
+                ['1', 'ONT', document.getElementById('ont_qty').value, document.getElementById('ont_kondisi').value, document.getElementById('ont_status').value, document.getElementById('ont_sn').value],
+                ['2', 'STB', document.getElementById('stb_qty').value, document.getElementById('stb_kondisi').value, document.getElementById('stb_status').value, document.getElementById('stb_sn').value],
+            ],
+            headStyles: { fillColor: [0, 86, 179] }, styles: { halign: 'center', fontSize: 9 }
+        });
+
+        doc.text("Keterangan Deaktivasi:", 15, doc.lastAutoTable.finalY + 10);
+        doc.text(document.getElementById('keterangan').value || "-", 15, doc.lastAutoTable.finalY + 15, { maxWidth: 170 });
+
+        const sigY = doc.lastAutoTable.finalY + 35;
+        doc.text("Pelanggan,", 40, sigY, { align: 'center' });
+        doc.addImage(sigPadCust.toDataURL(), 'PNG', 15, sigY + 2, 50, 20);
+        doc.text(`(${document.getElementById('nama_penanda_cust').value})`, 40, sigY + 28, { align: 'center' });
+
+        doc.text("Petugas ICON+,", 150, sigY, { align: 'center' });
+        doc.addImage(sigPadPetugas.toDataURL(), 'PNG', 125, sigY + 2, 50, 20);
+        doc.text(`(${document.getElementById('nama_penanda_petugas').value})`, 150, sigY + 28, { align: 'center' });
+
+        const fileName = `BA_ICONNET_${document.getElementById('cust_id').value || 'File'}.pdf`;
+
+        if (isUpload) {
+            const btn = document.getElementById('btnUpload');
+            btn.innerText = "Mengunggah..."; btn.disabled = true;
+            
+            const scriptURL = 'TEMPEL_URL_WEB_APP_ANDA_DISINI'; // <-- GANTI INI
+            const pdfBase64 = doc.output('datauristring');
+            
+            const formData = new FormData();
+            formData.append('fileContent', pdfBase64);
+            formData.append('filename', fileName);
+
+            fetch(scriptURL, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(res => {
+                alert(res.result === 'success' ? "Berhasil diunggah ke Drive!" : "Gagal: " + res.error);
+            })
+            .catch(err => alert("Error: " + err))
+            .finally(() => { btn.innerText = "UPLOAD KE DRIVE"; btn.disabled = false; });
+        } else {
+            doc.save(fileName);
+        }
+    }
+</script>
+</body>
+</html>
